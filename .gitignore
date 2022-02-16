@@ -1,0 +1,11 @@
+PTZControl/.vs
+PTZControl/Release/
+PTZControl/Debug/
+PTZControl/Save/
+PTZControl/x64/
+PTZControl/PTZControl.vcxproj.filters
+PTZControl/PTZControl.vcxproj.user
+PTZControl/PTZControlDEU.docx
+PTZControl/PTZControl.exe
+*.docx
+*.bak
