@@ -6,6 +6,10 @@ Unfortunately, it quickly turned out that the operation with the remote control 
 Some month later we bought a second camera and the program was extended by the function to control another camera. A maximum of two cameras are supported.
 And finally I added support for the Logitech Rally.
 
+### Where is the basic code from.
+It wasn't easy to get code that shows how to control a camera. Finally I contacted Lgoitech and I received download link to the `Logitech Collaboration Software Reference Kit` (Logitech CSRK)
+I found some Lync remote control code in it, that gave me some hints and the guids and usage for the Logitect camera interface.
+
 ## Used interfaces
 The program directly uses the camera media control via the Windows SDK (see links in the source code).
 For controlling the zoom functions and the preset functions of the PTZ 2 Pro, Logitech provided me with some example code with defines from the Lync driver.
