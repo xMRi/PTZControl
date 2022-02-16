@@ -2,12 +2,15 @@
 
 ## History
 This small program is designed to control a Logitech PTZ 2 Pro. The camera was purchased to stream our church services.
-Unfortunately, it quickly turned out that the operation with the remote control is possible but cumbersome and inaccurate, since the camera was installed directly behind and above the video technician. So I made the decision to build a corresponding control program.
-Some month later we bought a second camera and the program was extended by the function to control another camera. A maximum of two cameras are supported.
-And finally I added support for the Logitech Rally.
+Unfortunately, it quickly turned out that the operation with the remote control is possible but cumbersome and inaccurate. The camera was installed directly behind and above the video technician and always pointing back with the remote control was not comfortable. 
+The control Logitech software shipped with the camera is completely worthless.
+So, I made the decision to build a corresponding control program.
+Some months later we bought a second camera, and the program was extended by the function to control another camera. A maximum of two cameras are supported.
+And finally, I added support for the Logitech Rally.
 
-### Where is the basic code from.
-It wasn't easy to get code that shows how to control a camera. Finally I contacted Lgoitech and I received download link to the `Logitech Collaboration Software Reference Kit` (Logitech CSRK)
+### Where is the basic code from?
+It wasn't easy to get code that shows how to control a PTZ camera. 
+Finally I contacted Lgoitech and I received download link to the `Logitech Collaboration Software Reference Kit` (Logitech CSRK)
 I found some Lync remote control code in it, that gave me some hints and the guids and usage for the Logitect camera interface.
 
 ## Used interfaces
