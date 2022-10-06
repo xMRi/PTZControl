@@ -68,6 +68,18 @@ If you click on a direction button once, the motor is turned on and off again af
 If the direction button remains pressed, the motor remains switched on for the corresponding direction until the button is released again.
 This control seems more effective and accurate to me and is the standard. The disadvantage is that if the timer interval is too small, the camera does not react immediately when a button is clicked. But since precision was more important to me because our camera is installed relatively far away from the podium, I use this setting with a 70msec timer.
 
+## Hotkeys
+The program has serveral hotkeys that allows a control without the mouse when it has the focus.
+- Pan-Tilt control with Left, Right, Up, Down keys.
+- Home position with Num-0, Home keys.
+- Memory function with the M-key.
+- Recall stored position with the numeric keys 1-8 or the numeric key pad keys Num-1 to Num-8.#
+- Open the setings dialog with Num-Divide or Num-Multiply
+- Zoom in/out Page-Up/Down, Num+Plus, Num-Minus
+- Select Camera 1. Alt+1, Alt+Num-1, Alt+Page-Up
+- Select Camera 2. Alt+2, Alt+Num-2, Alt+Page-Down
+
+
 ## Command Line Options
 A few options can be set from the command line. Command-line switches override the settings in the registry.
 
