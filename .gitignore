@@ -7,5 +7,6 @@ PTZControl/PTZControl.vcxproj.filters
 PTZControl/PTZControl.vcxproj.user
 PTZControl/PTZControlDEU.docx
 PTZControl/PTZControl.exe
+PTZControl/PTZControl.aps
 *.docx
 *.bak
