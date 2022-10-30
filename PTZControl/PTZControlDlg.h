@@ -100,7 +100,7 @@ protected:
 	CString		m_strTooltips[NUM_MAX_WEBCAMS][CWebcamController::NUM_PRESETS];
 
 	HACCEL		m_hAccel;
-	CString m_strCameraDeviceName;
+	CString		m_strCameraDeviceNames;
 	int			m_iCurrentWebCam;		// zero based index to m_aWebCams
 	int			m_iNumWebCams;
 

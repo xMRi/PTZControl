@@ -495,6 +495,9 @@ CStringArray aStrCameraNameToSearch;
 			}
 		}
 	}
+	
+	// save the camera names.
+	m_strCameraDeviceNames = strCameras;
 
 	// On SHIFT and CTRL key down we show all found camera device names.
 	if (theApp.m_bShowDevices || (::GetAsyncKeyState(VK_SHIFT) & 0x8000) && (::GetAsyncKeyState(VK_CONTROL) & 0x8000))
@@ -789,7 +792,8 @@ void CPTZControlDlg::OnBtUnpushed()
 void CPTZControlDlg::OnBtSettings()
 {
 	CSettingsDlg dlg;
-	dlg.m_strCameraName = m_strCameraDeviceName;
+	dlg.m_strCameraName = m_strCameraDeviceNames;
+	dlg.m_strCameraName.Replace(_T("\r\n"), _T(", "));
 	dlg.m_bLogitechCameraControl = GetCurrentWebCam().UseLogitechMotionControl();
 	dlg.m_iMotorIntervalTimer = GetCurrentWebCam().GetMotorIntervalTimer();
 
