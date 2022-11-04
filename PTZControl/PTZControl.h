@@ -31,6 +31,7 @@
 // This will match all Logitech PRT Pro, PTZ Pro 2 and Rally camers.
 #define DEFAULT_DEVICE_NAME_1 _T("PTZ Pro")
 #define DEFAULT_DEVICE_NAME_2 _T("Logi Rally")
+#define DEFAULT_DEVICE_NAME_3 _T("Logi Group Camera")
 
 #define TIMER_FOCUS_CHECK			4711
 #define TIMER_AUTO_REPEAT			4712

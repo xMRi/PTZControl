@@ -349,7 +349,7 @@ UINT AFX_CDECL CPTZControlDlg::GuardThread(LPVOID p)
 			// Event is set.
 			return 0;
 		
-		DWORD dwResult = 0;		
+		DWORD_PTR dwResult = 0;		
 		// Check if the application is blocking
 		if (::SendMessageTimeout(pWnd->GetSafeHwnd(), WM_NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_NORMAL, 1000, &dwResult)==0)
 		{
@@ -460,6 +460,7 @@ BOOL CPTZControlDlg::OnInitDialog()
 CStringArray aStrCameraNameToSearch;
 	aStrCameraNameToSearch.Add(DEFAULT_DEVICE_NAME_1);
 	aStrCameraNameToSearch.Add(DEFAULT_DEVICE_NAME_2);
+	aStrCameraNameToSearch.Add(DEFAULT_DEVICE_NAME_3);
 	CString strCameraNameToSearch = theApp.GetProfileString(REG_DEVICE,REG_DEVICENAME,_T(""));
 	if (!strCameraNameToSearch.IsEmpty())
 		aStrCameraNameToSearch.Add(strCameraNameToSearch);
