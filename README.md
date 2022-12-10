@@ -44,12 +44,13 @@ All settings are stored in the registry under the branch `HKEY_CURRENT_USER\SOFT
 See the command line secion too.
 
 ### Supported Cameras
-Currently, the Logitech PTZ 2 Pro, Logitech Rally cameras and ConferenceCam CC3000e Camera are automatically detected.
+Currently, the Logitech PTZ 2 Pro, PTZ Pro, Logitech Rally cameras and ConferenceCam CC3000e Camera are automatically detected.
 For other cameras, you can try to force detection by specifying the name (or part of the name) of the cameras in the registry or on the command line.
 
 Internally, all cameras that have one of the following tokens in the name are automatically used:
-- *PTZ 2 Pro*
+- *PTZ Pro*
 - *Logi Rally*
+- *ConferenceCam*
 
 ### Guard Thread
 Unfortunately, we have sometimes had the experience that OBS or the USB bus hangs with a camera. The PTZControl program then usually stops and stops responding because the camera control commands block the application.
