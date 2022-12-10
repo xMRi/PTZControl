@@ -52,6 +52,16 @@
 #define IDC_ED_TOOLTIP_2_7              1018
 #define IDC_BT_WEBCAM2                  1019
 #define IDC_ED_TOOLTIP_2_8              1019
+#define IDC_BT_WEBCAM3                  1020
+#define IDC_ED_TOOLTIP_3_1              1020
+#define IDC_ED_TOOLTIP_3_2              1021
+#define IDC_ED_TOOLTIP__3_3             1022
+#define IDC_ED_TOOLTIP_3_3              1022
+#define IDC_ED_TOOLTIP_3_4              1023
+#define IDC_ED_TOOLTIP_3_5              1024
+#define IDC_ED_TOOLTIP_3_6              1025
+#define IDC_ED_TOOLTIP_3_7              1026
+#define IDC_ED_TOOLTIP_3_8              1027
 #define DC_BT_SETTINGS                  32791
 
 // Next default values for new objects

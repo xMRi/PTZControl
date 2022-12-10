@@ -27,6 +27,12 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_ED_CAMERA, m_strCameraName);
+	DDX_Check(pDX, IDC_CH_LOGITECHCONTROL, m_bLogitechCameraControl);
+	DDX_Text(pDX, IDC_ED_MOTORTIME, m_iMotorIntervalTimer);
+	DDX_Control(pDX, IDC_ED_MOTORTIME, m_edMotorInterval);
+	DDX_Control(pDX, IDC_CH_LOGITECHCONTROL, m_chLogitechControl);
+	
+	// Tooltips
 	DDX_Text(pDX, IDC_ED_TOOLTIP_1_1, m_strTooltip[0][0]);
 	DDX_Text(pDX, IDC_ED_TOOLTIP_1_2, m_strTooltip[0][1]);
 	DDX_Text(pDX, IDC_ED_TOOLTIP_1_3, m_strTooltip[0][2]);
@@ -43,10 +49,15 @@ void CSettingsDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_ED_TOOLTIP_2_6, m_strTooltip[1][5]);
 	DDX_Text(pDX, IDC_ED_TOOLTIP_2_7, m_strTooltip[1][6]);
 	DDX_Text(pDX, IDC_ED_TOOLTIP_2_8, m_strTooltip[1][7]);
-	DDX_Check(pDX, IDC_CH_LOGITECHCONTROL, m_bLogitechCameraControl);
-	DDX_Text(pDX, IDC_ED_MOTORTIME, m_iMotorIntervalTimer);
-	DDX_Control(pDX, IDC_ED_MOTORTIME, m_edMotorInterval);
-	DDX_Control(pDX, IDC_CH_LOGITECHCONTROL, m_chLogitechControl);
+	DDX_Text(pDX, IDC_ED_TOOLTIP_3_1, m_strTooltip[2][0]);
+	DDX_Text(pDX, IDC_ED_TOOLTIP_3_2, m_strTooltip[2][1]);
+	DDX_Text(pDX, IDC_ED_TOOLTIP_3_3, m_strTooltip[2][2]);
+	DDX_Text(pDX, IDC_ED_TOOLTIP_3_4, m_strTooltip[2][3]);
+	DDX_Text(pDX, IDC_ED_TOOLTIP_3_5, m_strTooltip[2][4]);
+	DDX_Text(pDX, IDC_ED_TOOLTIP_3_6, m_strTooltip[2][5]);
+	DDX_Text(pDX, IDC_ED_TOOLTIP_3_7, m_strTooltip[2][6]);
+	DDX_Text(pDX, IDC_ED_TOOLTIP_3_8, m_strTooltip[2][7]);
+
 	if (pDX->m_bSaveAndValidate)
 		m_iMotorIntervalTimer = min(max(10,m_iMotorIntervalTimer),1000);
 }

@@ -5,8 +5,9 @@ This small program is designed to control a Logitech PTZ 2 Pro. The camera was p
 Unfortunately, it quickly turned out that the operation with the remote control is possible but cumbersome and inaccurate. The camera was installed directly behind and above the video technician and always pointing back with the remote control was not comfortable. 
 The control Logitech software shipped with the camera is completely worthless.
 So, I made the decision to build a corresponding control program.
-Some months later we bought a second camera, and the program was extended by the function to control another camera. A maximum of two cameras are supported.
-And finally, I added support for the Logitech Rally.
+Some months later we bought a second camera, and the program was extended by the function to control another camera. At this time a maximum of two cameras was supported.
+Later added support for the Logitech Rally, the PTZ Pro and other Logitech cameras. 
+And finnaly as last feature the PTZcontrol now supports three cameras.
 
 ### Where is the basic code from?
 It wasn't easy to get code that shows how to control a PTZ camera. 
@@ -30,7 +31,7 @@ The program supports tooltips that and you can define them yourself to give the 
 ## Used environment and libraries
 I used the Visual Studoi 2019 Community Edition to develop this program with C++.
 MFC and ATL as the library. No additional software is used.
-The EXE runs alone, without installing any other files.
+The EXE runs alone, without installing any other files or DLLs or any installation.
 
 ## Behaviour
 The program is always in the foreground and has been designed relatively compact and small, so that you can hover  somewhere over your OBS program and it is really easy to use.
@@ -43,7 +44,7 @@ All settings are stored in the registry under the branch `HKEY_CURRENT_USER\SOFT
 See the command line secion too.
 
 ### Supported Cameras
-Currently, the Logitech PTZ 2 Pro and Logitech Rally cameras are automatically detected.
+Currently, the Logitech PTZ 2 Pro, Logitech Rally cameras and ConferenceCam CC3000e Camera are automatically detected.
 For other cameras, you can try to force detection by specifying the name (or part of the name) of the cameras in the registry or on the command line.
 
 Internally, all cameras that have one of the following tokens in the name are automatically used:
@@ -85,7 +86,7 @@ A few options can be set from the command line. Command-line switches override t
 
 **-device:"name of device"**
 The device option can be used to specify a name component of a camera to be used for control. 
-If you enter "*" as the name, then each camera will be recognized.
+If you enter "*" as the name, then any camera will be recognized.
 
 **-showdevices**
 Displays a message box after startup showing the name(s) of the detected cameras.
@@ -96,10 +97,10 @@ At startup, a detected camera is moved to the home position (Logitech Preset) an
 **-noguard**
 -noguard prevents the application from terminating itself in a controlled manner. This can be especially important in the event of a bug and for testing.
 
-## Registry 
+## Registry settings
 In the registry branch `HKEY_CURRENT_USER\SOFTWARE\MRi-Software\PTZControl\Options` it is possible to preset the following options  without using the command line.
 
-**NoReset (DWORD value**
+**NoReset (DWORD value)**
 *Value <>0:* Has the same function as -noreset on the command line. The current camera and zoom position is maintained when starting the program. Value = 0: When starting the program, you move to the home position and zoom to maximum wide angle. (Default)
 
 **NoGuard (DWORD value)**

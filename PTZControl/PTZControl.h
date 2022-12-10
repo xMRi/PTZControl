@@ -27,11 +27,6 @@
 #define REG_NORESET		_T("NoReset")
 #define REG_NOGUARD		_T("NoGuard")
 
-// Allow the cameras with the following tags in the device name.
-// This will match all Logitech PRT Pro, PTZ Pro 2 and Rally camers.
-#define DEFAULT_DEVICE_NAME_1 _T("PTZ Pro")
-#define DEFAULT_DEVICE_NAME_2 _T("Logi Rally")
-
 #define TIMER_FOCUS_CHECK			4711
 #define TIMER_AUTO_REPEAT			4712
 #define TIMER_CLEAR_MEMORY			4713

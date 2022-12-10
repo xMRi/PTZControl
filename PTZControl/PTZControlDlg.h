@@ -73,7 +73,7 @@ public:
 	~CPTZControlDlg();
 // Dialog Data
 	enum { IDD = IDD_PTZCONTROL_DIALOG };
-	static const int NUM_MAX_WEBCAMS = 2;
+	static const int NUM_MAX_WEBCAMS = 3;
 
 protected:
 	CPTZButton m_btZoomIn;

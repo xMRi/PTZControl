@@ -13,6 +13,88 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////
+//	Array of supported cameras
+//		Allow the cameras with the following tags in the device name.
+//		This will match all Logitech PRT Pro, PTZ Pro 2 and Rally cameras.
+//		Also the ConferenceCam CC3000e Camera will be detected.
+//		Remember: Just a partial token must match the name.
+static const LPCTSTR g_aCameras[] = 
+{
+	_T("PTZ Pro"),
+	_T("Logi Rally"),
+	_T("ConferenceCam"),
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// We have several layouts for the Buttons
+// 0-1 cameras (dialog will shrink by one column)
+//		E |
+//		S |
+// 2 cameras
+//		S E 
+//		- -
+//		1 2
+// 3 cameras
+//		1 E 
+//		2 S
+//		3 
+
+struct SPosition
+{
+	UINT	nId;					// Id of button 
+	bool	bShow;					// Show or hide
+	int		x, y;					// outside raster, left two columns
+};
+
+struct SLayout
+{
+	int cxDelta;					// Num to shrink / grow the dialog
+	const SPosition* pButtons;		// List of entries terminated with nId==0.
+};
+
+static const SPosition layoutBtns1[]	// 0 or 1 camera (uses only 1 column)
+{
+	IDC_BT_EXIT,		true,  0, 0,	// one columns
+	IDC_BT_SETTINGS,	true,  0, 1,
+	// Invisible
+	IDC_BT_WEBCAM1,		false, 0, 0,
+	IDC_BT_WEBCAM2,		false, 0, 0,
+	IDC_BT_WEBCAM3,		false, 0, 0,
+	0
+};
+
+static const SPosition layoutBtns2[]	// 2 cameras (uses 2 columns)
+{
+	IDC_BT_SETTINGS,	true,	0, 0,	// Top row
+	IDC_BT_EXIT,		true,	1, 0,
+	IDC_BT_WEBCAM1,		true,	0, 2,	// bottom row
+	IDC_BT_WEBCAM2,		true,	1, 2,
+	// Invisible
+	IDC_BT_WEBCAM3,		false,  0, 0,
+	0
+};
+
+static const SPosition layoutBtns3[]	// 3 cameras
+{
+	IDC_BT_EXIT,		true,	1, 0,	// Outer left column
+	IDC_BT_SETTINGS,	true,	1, 1,
+	IDC_BT_WEBCAM1,		true,	0, 0,	// all in one column left (top down)
+	IDC_BT_WEBCAM2,		true,	0, 1,
+	IDC_BT_WEBCAM3,		true,   0, 2,
+	0
+};
+
+const SLayout g_layout[CPTZControlDlg::NUM_MAX_WEBCAMS+1] = 
+{
+	-1,	layoutBtns1,		// 0 or 1 camera (shrink dialog)
+	-1,	layoutBtns1,		// 0 or 1 camera (shrink dialog)
+	0,  layoutBtns2,		// 2 cameras	 (keep size)
+	0,  layoutBtns3,		// 3 cameras	 (keep size)
+};
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+//	Special new notification 
 
 #define ON_BN_UNPUSHED(id, memberFxn) \
 	ON_CONTROL(BN_UNPUSHED, id, memberFxn)
@@ -221,6 +303,7 @@ void CPTZControlDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BT_SETTINGS, m_btSettings);
 	DDX_Control(pDX, IDC_BT_WEBCAM1, m_btWebCam[0]);
 	DDX_Control(pDX, IDC_BT_WEBCAM2, m_btWebCam[1]);
+	DDX_Control(pDX, IDC_BT_WEBCAM3, m_btWebCam[2]);
 }
 
 BEGIN_MESSAGE_MAP(CPTZControlDlg, CDialogEx)
@@ -233,6 +316,7 @@ BEGIN_MESSAGE_MAP(CPTZControlDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BT_MEMORY, &CPTZControlDlg::OnBtMemory)
 	ON_COMMAND_EX(IDC_BT_WEBCAM1, &CPTZControlDlg::OnBtWebCam)
 	ON_COMMAND_EX(IDC_BT_WEBCAM2, &CPTZControlDlg::OnBtWebCam)
+	ON_COMMAND_EX(IDC_BT_WEBCAM3, &CPTZControlDlg::OnBtWebCam)
 	ON_COMMAND_EX(IDC_BT_PRESET1, &CPTZControlDlg::OnBtPreset)
 	ON_COMMAND_EX(IDC_BT_PRESET2, &CPTZControlDlg::OnBtPreset)
 	ON_COMMAND_EX(IDC_BT_PRESET3, &CPTZControlDlg::OnBtPreset)
@@ -363,6 +447,9 @@ BOOL CPTZControlDlg::OnInitDialog()
 {
 	__super::OnInitDialog();
 
+	//---------------------------------------------------------------------
+	// INIT MFC STUFF
+
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
@@ -397,6 +484,7 @@ BOOL CPTZControlDlg::OnInitDialog()
 			&m_btSettings,
 			&m_btWebCam[0],
 			&m_btWebCam[1],
+			&m_btWebCam[2],
 		};
 		for (auto* pBtn : apButtons)
 		{
@@ -419,23 +507,10 @@ BOOL CPTZControlDlg::OnInitDialog()
 	m_btMemory.SetCheckStyle();
 	for (auto &btn : m_btWebCam)
 		btn.SetCheckStyle();
-	
-	// First Center
-	CenterWindow();
 
-	// Adjust the window
-	CRect rect;
-	GetWindowRect(rect);
-	CPoint pt = rect.TopLeft();
-	rect.OffsetRect(-pt);
-	pt.x = theApp.GetProfileInt(REG_WINDOW,REG_WINDOW_POSX,pt.x);
-	pt.y = theApp.GetProfileInt(REG_WINDOW,REG_WINDOW_POSY,pt.y);
-	rect.OffsetRect(pt);
-	AdjustVisibleWindowRect(rect);
-
-	// Move it
-	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, 0, 0, SWP_NOSIZE);
-
+	//---------------------------------------------------------------------
+	// INIT AND FIND WEB CAMS
+	// 
 	// Try to find the Device list
 	CStringArray aDevices;
 	CWebcamController::ListDevices(aDevices);
@@ -457,10 +532,10 @@ BOOL CPTZControlDlg::OnInitDialog()
 
 	// Find the devices to search for. We have some default devices if no other is set in 
 	// the registry o on the command line.
-CStringArray aStrCameraNameToSearch;
-	aStrCameraNameToSearch.Add(DEFAULT_DEVICE_NAME_1);
-	aStrCameraNameToSearch.Add(DEFAULT_DEVICE_NAME_2);
-	CString strCameraNameToSearch = theApp.GetProfileString(REG_DEVICE,REG_DEVICENAME,_T(""));
+	CStringArray aStrCameraNameToSearch;
+	for (const auto *p : g_aCameras)
+		aStrCameraNameToSearch.Add(p);
+	CString strCameraNameToSearch = theApp.GetProfileString(REG_DEVICE, REG_DEVICENAME, _T(""));
 	if (!strCameraNameToSearch.IsEmpty())
 		aStrCameraNameToSearch.Add(strCameraNameToSearch);
 	if (!theApp.m_strDevName.IsEmpty())
@@ -514,14 +589,52 @@ CStringArray aStrCameraNameToSearch;
 		AfxMessageBox(IDP_ERR_NO_CAMERA, MB_ICONERROR);
 	}
 
-	// Only 1 or none, we don't need the camera selection buttons
-	if (m_iNumWebCams<=1)
+	//---------------------------------------------------------------------
+	// ADJUST THE DIALOG
+
+	// Calculate the with an position of the Grid.
+	CRect rectBtn11, rectBtn12, rectBtn21;
+	m_btWebCam[0].GetWindowRect(rectBtn11);
+	m_btWebCam[1].GetWindowRect(rectBtn12);
+	m_btExit.GetWindowRect(rectBtn21);
+	ScreenToClient(rectBtn11);
+	ScreenToClient(rectBtn12);
+	ScreenToClient(rectBtn21);
+
+	CPoint pointBase { rectBtn11.TopLeft() };
+	CSize sizeRaster { rectBtn21.left-rectBtn11.left, rectBtn12.top-rectBtn11.top };
+
+	// Get the required layout
+	const auto &layout = g_layout[m_iNumWebCams];
+
+	for (const auto* pLayoutBtn = layout.pButtons; pLayoutBtn->nId; ++pLayoutBtn)
 	{
-		// Sow the web cam buttons only if we have 2 cams
-		for (auto &btn : m_btWebCam)
-			btn.ShowWindow(SW_HIDE);
+		CWnd *pWnd = GetDlgItem(pLayoutBtn->nId);
+		// Move the button and hide or show the button
+		pWnd->SetWindowPos(nullptr, 
+						   pointBase.x + pLayoutBtn->x * sizeRaster.cx, pointBase.y + pLayoutBtn->y * sizeRaster.cy, 
+						   0, 0, SWP_NOSIZE|SWP_NOZORDER|(pLayoutBtn->bShow ? SWP_SHOWWINDOW : SWP_HIDEWINDOW)			
+		);
+		pWnd->EnableWindow(pLayoutBtn->bShow);
 	}
 
+	// First Center
+	CenterWindow();
+
+	// Adjust the window
+	CRect rect;
+	GetWindowRect(rect);
+	CPoint pt = rect.TopLeft();
+	rect.OffsetRect(-pt);
+	pt.x = theApp.GetProfileInt(REG_WINDOW, REG_WINDOW_POSX, pt.x);
+	pt.y = theApp.GetProfileInt(REG_WINDOW, REG_WINDOW_POSY, pt.y);
+	rect.OffsetRect(pt);
+	AdjustVisibleWindowRect(rect);
+
+	// Move it
+	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, rect.Width()+layout.cxDelta*sizeRaster.cx, rect.Height(), 0);
+
+	// Set the tooltips for all presets
 	for (int i = 0; i < CWebcamController::NUM_PRESETS; ++i)
 	{
 		for (int j = 0; j < CPTZControlDlg::NUM_MAX_WEBCAMS; ++j)
@@ -690,7 +803,8 @@ BOOL CPTZControlDlg::OnBtPreset(UINT nId)
 
 BOOL CPTZControlDlg::OnBtWebCam(UINT nId)
 {
-	SetActiveCam(nId==IDC_BT_WEBCAM1 ? 0 : 1);
+	SetActiveCam(nId==IDC_BT_WEBCAM1 ? 0 :
+				 nId==IDC_BT_WEBCAM2 ? 1 : 2);
 	return 1;
 }
 
