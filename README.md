@@ -11,7 +11,7 @@ And finnaly as last feature the PTZcontrol now supports three cameras.
 
 ### Where is the basic code from?
 It wasn't easy to get code that shows how to control a PTZ camera. 
-Finally I contacted Lgoitech and I received download link to the `Logitech Collaboration Software Reference Kit` (Logitech CSRK)
+Finally I contacted Logitech and I received download link to the `Logitech Collaboration Software Reference Kit` (Logitech CSRK)
 I found some Lync remote control code in it, that gave me some hints and the guids and usage for the Logitect camera interface.
 
 ## Used interfaces
@@ -29,14 +29,14 @@ Standard controls from the Windows Driver API are used
 The program supports tooltips that and you can define them yourself to give the camera presets useful names. (Separate for each camera)
 
 ## Used environment and libraries
-I used the Visual Studoi 2019 Community Edition to develop this program with C++.
-MFC and ATL as the library. No additional software is used.
+I used the Visual Studio 2019 Community Edition to develop this program with C++.
+Using MFC and ATL as libraries. No additional software is used.
 The EXE runs alone, without installing any other files or DLLs or any installation.
 
 ## Behaviour
-The program is always in the foreground and has been designed relatively compact and small, so that you can hover  somewhere over your OBS program and it is really easy to use.
-Current selected preset or home position are shown with a green background on the buttons.
-Recalling a presets are  simply done by clicking on one of the number buttons. 
+The program is always in the foreground and has been designed relatively compact and small, so that you can hover somewhere over your OBS program and it is really easy to use.
+Currently selected preset or home position are shown with a green background on the buttons.
+Recalling a preset is simply done by clicking on one of the number buttons. 
 Presets are changed by pressing the M button (Memory) followed by a number key. The M button turns red as long as it is active.
 
 The program remembers its last position on the screen and is automatically repositioned to when it is started. 
@@ -58,7 +58,7 @@ Through an internal guard thread, the application can determine that it is no lo
 Otherwise you would have to use the task manager and this can take a lot of time to terminate the application in the hustle and bustle of a livestream.
 
 ### Logitech Motion Control
-The Logitech cameras have their own interface for pan/tilt control. This moves the camera in X/Y Axe by a certain step value, This control is a special Logitech feature. 
+The Logitech cameras have their own interface for pan/tilt control. This moves the camera in X/Y axes by a certain step value, This control is a special Logitech feature. 
 If you click on a direction button once, exactly one step pulse is output.
 If you hold down a direction button, a pulse is sent to the camera again and again at a certain interval to change the direction.
 
