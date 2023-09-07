@@ -433,7 +433,7 @@ UINT AFX_CDECL CPTZControlDlg::GuardThread(LPVOID p)
 			// Event is set.
 			return 0;
 		
-		DWORD dwResult = 0;		
+		DWORD_PTR dwResult = 0;		
 		// Check if the application is blocking
 		if (::SendMessageTimeout(pWnd->GetSafeHwnd(), WM_NULL, 0, 0, SMTO_ABORTIFHUNG | SMTO_NORMAL, 1000, &dwResult)==0)
 		{
