@@ -1,0 +1,23 @@
+name: Build PTZControl Project
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        configuration: [Debug]
+        platform: [x86, x64]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup MSBuild path
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Restore NuGet packages
+      run: nuget restore PTZControl/PTZControl.sln
+
+    - name: Build the PTZControl project
+      run: msbuild PTZControl/PTZControl.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
