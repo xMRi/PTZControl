@@ -1,0 +1,103 @@
+name: Build and Release PTZControl
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-x64:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup MSBuild path
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Restore NuGet packages
+      run: nuget restore PTZControl/PTZControl.sln
+
+    - name: Build the PTZControl project (x64)
+      run: msbuild PTZControl/PTZControl.sln /p:Configuration=Release /p:Platform=x64
+
+    - name: Upload PTZControl (x64) as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PTZControl-x64
+        path: ${{ github.workspace }}\PTZControl\x64\Release\PTZControl.exe
+
+  build-x86:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup MSBuild path
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Restore NuGet packages
+      run: nuget restore PTZControl/PTZControl.sln
+
+    - name: Build the PTZControl project (x86)
+      run: msbuild PTZControl/PTZControl.sln /p:Configuration=Release /p:Platform=x86
+
+    - name: Upload PTZControl (x86) as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: PTZControl-x86
+        path: ${{ github.workspace }}\PTZControl\Release\PTZControl.exe
+
+  create-release:
+    needs: [build-x64, build-x86]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v2
+  
+      - name: Extract Tag Name
+        id: tagname
+        run: echo "TAG_NAME=$(echo ${{ github.ref }} | sed 's/refs\/tags\///')" >> $GITHUB_ENV
+  
+      - name: Download x64 artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: PTZControl-x64
+  
+      - name: Move x64 Artifact
+        run: |
+          mkdir -p PTZControl-${{ env.TAG_NAME }}/x64
+          mv ./PTZControl.exe PTZControl-${{ env.TAG_NAME }}/x64/
+  
+      - name: Download x86 artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: PTZControl-x86
+  
+      - name: Move x86 Artifact
+        run: |
+          mkdir -p PTZControl-${{ env.TAG_NAME }}/x86
+          mv ./PTZControl.exe PTZControl-${{ env.TAG_NAME }}/x86/
+  
+      - name: Zip Files
+        run: zip -r PTZControl.zip PTZControl-${{ env.TAG_NAME }}
+  
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: PTZControl ${{ env.TAG_NAME }}
+          draft: false
+          prerelease: false
+  
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./PTZControl.zip
+          asset_name: PTZControl.zip
+          asset_content_type: application/zip
+      
