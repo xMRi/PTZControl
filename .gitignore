@@ -10,3 +10,6 @@ PTZControl/PTZControl.exe
 PTZControl/PTZControl.aps
 *.docx
 *.bak
+/PTZControl/PTZControl/Release
+/PTZControl/PTZControl/x64
+/PTZControl/PTZControl/Debug

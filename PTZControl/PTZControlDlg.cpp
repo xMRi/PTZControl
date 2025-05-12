@@ -23,6 +23,7 @@ static const LPCTSTR g_aCameras[] =
 	_T("PTZ Pro"),
 	_T("Logi Rally"),
 	_T("ConferenceCam"),
+	_T("Logi Group Camera"),
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
