@@ -191,6 +191,7 @@
     <ClInclude Include="PTZControlDlg.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SettingsDlg.h" />
+    <ClInclude Include="SingleInstance.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +205,7 @@
     <ClCompile Include="PTZControl.cpp" />
     <ClCompile Include="PTZControlDlg.cpp" />
     <ClCompile Include="SettingsDlg.cpp" />
+    <ClCompile Include="SingleInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="PTZControl.rc" />

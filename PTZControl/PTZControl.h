@@ -47,6 +47,17 @@
 #define COLOR_RED				RGB(240,0,0)
 #define COLOR_ORANGE			RGB(255,140,0)
 
+#define WM_APP_COMMAND				(WM_APP+1)	
+											// wParam : camera number, lParam: command and position
+											// Commands: LOWORD
+											//  ZoomIn= +, ZoomOut = -, 
+											//  PanLeft = L, PanRight = R, 
+											//  TiltUp = U, TiltDown = D, 
+											//  Home = H, 
+											//  Restore MemoryPos = M (HIWORD = memory position),
+											//  Store MemoryPos = S (HIWORD = memory position)
+
+
 //////////////////////////////////////////////////////////////////////////
 // CPTZControlApp:
 // See PTZControl.cpp for the implementation of this class
@@ -61,6 +72,12 @@ public:
 public:
 	virtual BOOL InitInstance();
 
+	void SetRC(int iRC)
+	{
+		if (iRC != -1)
+			m_iRC = iRC;
+	}
+
 // Implementation
 
 	DECLARE_MESSAGE_MAP()
@@ -74,7 +91,10 @@ public:
 	bool	m_bShowDevices;
 
 private:
-	CPTZControlDlg* m_pDlg;
+	CPTZControlDlg* m_pDlg{};
+	int		m_iRC{ -1 };		// Return code to return from the application. Default is 0, but can be set to other values on error.		
+								// Command line errors have retcode 8. -1 used to use the default retcod
 };
+
 
 extern CPTZControlApp theApp;

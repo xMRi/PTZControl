@@ -161,4 +161,6 @@ protected:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnBtUnpushed();
 	afx_msg void OnBtSettings();
+	virtual LRESULT OnAppCommand(WPARAM wParam, LPARAM lParam);
+
 };

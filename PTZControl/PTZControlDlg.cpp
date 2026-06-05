@@ -4,6 +4,8 @@
 
 #include "pch.h"
 #include "framework.h"
+#include "SingleInstance.h"
+
 #include "PTZControl.h"
 #include "PTZControlDlg.h"
 #include "SettingsDlg.h"
@@ -343,6 +345,7 @@ BEGIN_MESSAGE_MAP(CPTZControlDlg, CDialogEx)
 	ON_BN_UNPUSHED(IDC_BT_RIGHT, &CPTZControlDlg::OnBtUnpushed)
 	ON_WM_TIMER()
 	ON_WM_HOTKEY()
+	ON_MESSAGE(WM_APP_COMMAND, &CPTZControlDlg::OnAppCommand)
 END_MESSAGE_MAP()
 
 
@@ -512,6 +515,12 @@ BOOL CPTZControlDlg::OnInitDialog()
 	m_btMemory.SetCheckStyle();
 	for (auto &btn : m_btWebCam)
 		btn.SetCheckStyle();
+
+	//----------------------------------------------------------------------
+	// Save the current instance
+
+	CSingleInstance& instance = CSingleInstance::Instance();
+	instance.SetInstanceWindow(this);
 
 	//---------------------------------------------------------------------
 	// INIT AND FIND WEB CAMS
@@ -1016,5 +1025,72 @@ void CPTZControlDlg::OnBtSettings()
 
 	// Set tooltips again
 	SetActiveCam(m_iCurrentWebCam);
+}
+
+LRESULT CPTZControlDlg::OnAppCommand(WPARAM wParam, LPARAM lParam)
+{
+	// Check if we know this camera.
+	int iCamera = LOWORD(wParam);
+	if (iCamera<0 || iCamera>=m_iNumWebCams)
+		return 0;
+
+	// Preset must not exceed
+	UINT uiPreset = HIWORD(lParam);
+	if (uiPreset>=CWebcamController::NUM_PRESETS)
+		return 0;
+
+	// Save the current camera. We will restore it at the end of this function.
+	// And select the one we want to control.
+	int iActiveCam = m_iCurrentWebCam;
+	SetActiveCam(iCamera);
+
+	// Check the command (lParam)
+	//  ZoomIn= +, ZoomOut = -, 
+	//  PanLeft = L, PanRight = R, 
+	//  TiltUp = U, TiltDown = D, 
+	//  Home = H, 
+	//  Restore MemoryPos = M (HIWORD = memory position),
+	//  Store MemoryPos = S (HIWORD = memory position)
+	int iRC = 1;
+
+	switch (LOWORD(lParam))
+	{
+	case '+':
+		OnBtZoomIn();
+		break;
+	case '-':
+		OnBtZoomOut();
+		break;
+	case 'L':
+		OnBtLeft();
+		break;
+	case 'R':
+		OnBtRight();
+		break;
+	case 'U':
+		OnBtUp();
+		break;
+	case 'D':
+		break;
+	case 'H':
+		OnBtHome();
+		break;
+	case 'M':
+		OnBtPreset(m_btPreset[uiPreset].GetDlgCtrlID());
+		break;
+	case 'S':
+		OnBtMemory();
+		OnBtPreset(m_btPreset[uiPreset].GetDlgCtrlID());
+		break;
+	default:
+		// Unknown command
+		iRC = 0;
+		break;
+	}
+
+	// Restore old camera
+	SetActiveCam(iActiveCam);
+
+	return iRC;
 }
 

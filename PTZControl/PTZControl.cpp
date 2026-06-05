@@ -3,6 +3,7 @@
 //
 
 #include "pch.h"
+#include "SingleInstance.h"
 #include "framework.h"
 #include "PTZControl.h"
 
@@ -39,6 +40,15 @@ public:
 	bool	m_bNoReset;			// No Reset of web cam
 	bool	m_bNoGuard;			// Prevent a guard thread
 	bool	m_bShowDevices;		// SHow message box with devicenames on open.
+
+	// Command line options that allow controlling the cameras.
+	int		m_iNumCamera{ 0 };		// If no camera is defined we use camer 0
+	int		m_iZoom{ 0 };			// Zoom 1 (Zoom in), -1 (zoom out)
+	int		m_iRestorePreset{ -1 };	// Restore to memory position 0-7
+	int		m_iStorePreset{ -1 };	// Store to memory position 0-7
+	int		m_iMovePan{ 0 };		// Move pan direction: 1 (right), -1 (left)
+	int 	m_iMoveTilt{ 0 };		// Move tilt direction: -1 (down), 1 (up)	
+	int		m_iMoveHome{ 0 };		// Move Home: 1 
 
 	// Currently not used (may be used if we ant yes/no/undefined)
 	enum class Mode
@@ -78,6 +88,77 @@ void CPTZControlCommandLineInfo::ParseParam(const char* pszParam,BOOL bFlag,BOOL
 		else if (_stricmp(pszParam, "showdevices") == 0)
 		{
 			m_bShowDevices = true;
+		}
+		else if (isdigit(*pszParam))
+		{
+			// We have a number, so we set the camera number to use
+			m_iNumCamera = atoi(pszParam)-1;
+			if (m_iNumCamera<0 || m_iNumCamera>=CPTZControlDlg::NUM_MAX_WEBCAMS)
+				theApp.SetRC(8);	// Command line error
+		}
+		else if (_strnicmp(pszParam, "restore:", 8)==0)
+		{
+			if (isdigit(pszParam[8]))
+			{
+				m_iRestorePreset = atoi(pszParam+8)-1;
+				if (m_iRestorePreset<0 || m_iRestorePreset>=CWebcamController::NUM_PRESETS)
+					theApp.SetRC(8);	// Command line error
+			}
+			else
+				theApp.SetRC(8);	// Command line error
+		}
+		else if (_strnicmp(pszParam, "store:", 6)==0)
+		{
+			if (isdigit(pszParam[6]))
+			{
+				m_iStorePreset = atoi(pszParam+6)-1;
+				if (m_iStorePreset<0 || m_iStorePreset>=CWebcamController::NUM_PRESETS)
+					theApp.SetRC(8);	// Command line error
+			}
+			else
+				theApp.SetRC(8);	// Command line error
+		}
+		else if (_strnicmp(pszParam, "move", 4)==0)
+		{
+			pszParam += 4;
+			if (_stricmp(pszParam, "_up")==0)
+			{
+				m_iMoveTilt = 1;
+			}
+			else if (_stricmp(pszParam, "_down")==0)
+			{
+				m_iMoveTilt = -1;
+			}
+			else if (_stricmp(pszParam, "_left")==0)
+			{
+				m_iMovePan = -1;
+			}
+			else if (_stricmp(pszParam, "_right")==0)
+			{
+				m_iMovePan = 1;
+			}
+			else if (_stricmp(pszParam, "_home")==0)
+			{
+				m_iMoveHome = 1;
+			}
+			else
+				theApp.SetRC(8);	// Command line error
+		}
+		else if (_strnicmp(pszParam, "zoom", 4)==0)
+		{
+			pszParam += 4;
+			if (_stricmp(pszParam, "_in")==0 ||
+				_stricmp(pszParam, "+")==0)
+			{
+				m_iZoom = 1;
+			}
+			else if (_stricmp(pszParam, "_in")==0 ||
+					 _stricmp(pszParam, "+")==0)
+			{
+				m_iZoom = -1;
+			}
+			else 
+				theApp.SetRC(8);	// Command line error
 		}
 		else
 			ParseParamFlag(pszParam);
@@ -146,12 +227,57 @@ BOOL CPTZControlApp::InitInstance()
 
 //-------------Main ----------------------------------------------------
 
-	// Create the Dialog
-	m_pDlg = new CPTZControlDlg();
-	if (m_pDlg->Create(CPTZControlDlg::IDD))
-		m_pMainWnd = m_pDlg;
-	else
-		return FALSE;
+	auto& instance = CSingleInstance::Instance();
+
+	// Check if we know an instance already. If not, we create the dialog. 
+	// If there is an instance, we will try to execute a command on it.
+	if (instance.Register())
+	{
+		// Create the Dialog
+		m_pDlg = new CPTZControlDlg();
+		if (m_pDlg->Create(CPTZControlDlg::IDD))
+			m_pMainWnd = m_pDlg;
+		else
+			return FALSE;
+	} 
+
+	// If we have an instance we try to execute a command on it, if there is one.
+	auto hWnd = instance.FindInstance(); 
+	if (hWnd)
+	{
+		// We already have a window, so we check if we want to execute a command on it. 
+		// Try to execute a command 
+		if (cmdInfo.m_iZoom!=0)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iZoom<0 ? '+' : '-')==0)
+				theApp.SetRC(16);	// Command error
+		}
+		if (cmdInfo.m_iMovePan!=0)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iMovePan<0 ? 'L' : 'R')==0)
+				theApp.SetRC(16);	// Command error
+		}
+		if (cmdInfo.m_iMoveHome!=0)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, 'H')==0)
+				theApp.SetRC(16);	// Command error
+		}
+		if (cmdInfo.m_iMoveTilt!=0)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iMoveTilt<0 ? 'D' : 'U')==0)
+				theApp.SetRC(16);	// Command error
+		}
+		if (cmdInfo.m_iRestorePreset!=-1)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM('R', cmdInfo.m_iRestorePreset))==0)
+				theApp.SetRC(16);	// Command error
+		}
+		if (cmdInfo.m_iStorePreset!=-1)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM('S', cmdInfo.m_iStorePreset))==0)
+				theApp.SetRC(16);	// Command error
+		}
+	}
 
 	// Succeeded
 	return TRUE;
@@ -165,5 +291,9 @@ int CPTZControlApp::ExitInstance()
 	ControlBarCleanUp();
 #endif
 
-	return __super::ExitInstance();
+	// Set a returncode if we executed a command.
+	int iRC = __super::ExitInstance();
+	if (m_iRC!= -1)
+		iRC = m_iRC;
+	return iRC;
 }
