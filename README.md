@@ -99,18 +99,44 @@ If camera 2/3 are not available the hotkeys are ignored and not defined.
 ## Command Line Options
 A few options can be set from the command line. Command-line switches override the settings in the registry.
 
-**-device:"name of device"**
-The device option can be used to specify a name component of a camera to be used for control. 
-If you enter "*" as the name, then any camera will be recognized.
+| Option | Description |
+|---|---|
+| -device:"*name of device*" | The device option can be used to specify a name component of a camera to be used for control.<br>If you enter "*" as the name, then any camera will be recognized.
+| -showdevices | Displays a message box after startup showing the name(s) of the detected cameras. |
+| -noreset | At startup, a detected camera is moved to the home position (Logitech Preset) and the zoom is reset to maximum wide angle. If the *-noreset* option  is specified, the camera position remains unchanged. |
+| -noguard | *-noguard* prevents the application from terminating itself in a controlled manner. This can be especially important in the event of a bug and for testing.|
 
-**-showdevices**
-Displays a message box after startup showing the name(s) of the detected cameras.
+## Controlling the cameras with command line options
 
-**-noreset**
-At startup, a detected camera is moved to the home position (Logitech Preset) and the zoom is reset to maximum wide angle. If the -noreset option  is specified, the camera position remains unchanged.
+*Bitfocus Companion* and *Elgato Streamdeck* allow starting applications. With the extended command line options it is possible to control the camera with this devices.
 
-**-noguard**
--noguard prevents the application from terminating itself in a controlled manner. This can be especially important in the event of a bug and for testing.
+| Option | Description |
+|---|---|
+| -*n* | Select camera n=1,2,3 |
+| -zoom_in | Zoom camera in |
+| -zoom_out | Zoom camera out |
+| -move_up | Execute tilt movement up |
+| -move_down | Execute tilt movement up |
+| -move_left | Execute pan  movement left |
+| -move_right | Execute pan  movement right |
+| -move_home | Position camera home |
+| -store:*n* | Store current camera position under store n (*n*=1-8) |
+| -restore:*n* | Restore camera position from storage n (*n*=1-8) |
+
+Only one camera can be controlled with one call to the command line. If you want to control multiple cameras you have to use multiple call to the command line.
+It is possible to combine different commands on the command line. The sequence as commands are executed is always the same: *Home, Restore, Zoom, Pan, Tilt, Store*.
+
+### Internal handling
+
+When *PTZControl* is already started the applications starts normally and executes commands that might be defined on the command line.
+
+When *PTZControl* is already started, the command line options are examined and the command is transferred to the already running instance of the command.
+
+Upon successful of a command line execution the exe return code is 0.<br>
+When the syntax of a command line is incorrect the return code of the exe is 8.<br>
+When the a command can't be executed the return code of the exe is 16.<br>
+
+
 
 ## Registry settings
 In the registry branch `HKEY_CURRENT_USER\SOFTWARE\MRi-Software\PTZControl\Options` it is possible to preset the following options  without using the command line.

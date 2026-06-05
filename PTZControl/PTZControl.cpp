@@ -247,6 +247,16 @@ BOOL CPTZControlApp::InitInstance()
 	{
 		// We already have a window, so we check if we want to execute a command on it. 
 		// Try to execute a command 
+		if (cmdInfo.m_iMoveHome!=0)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, 'H')==0)
+				theApp.SetRC(16);	// Command error
+		}
+		if (cmdInfo.m_iRestorePreset!=-1)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM('R', cmdInfo.m_iRestorePreset))==0)
+				theApp.SetRC(16);	// Command error
+		}
 		if (cmdInfo.m_iZoom!=0)
 		{
 			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iZoom<0 ? '+' : '-')==0)
@@ -257,19 +267,9 @@ BOOL CPTZControlApp::InitInstance()
 			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iMovePan<0 ? 'L' : 'R')==0)
 				theApp.SetRC(16);	// Command error
 		}
-		if (cmdInfo.m_iMoveHome!=0)
-		{
-			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, 'H')==0)
-				theApp.SetRC(16);	// Command error
-		}
 		if (cmdInfo.m_iMoveTilt!=0)
 		{
 			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iMoveTilt<0 ? 'D' : 'U')==0)
-				theApp.SetRC(16);	// Command error
-		}
-		if (cmdInfo.m_iRestorePreset!=-1)
-		{
-			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM('R', cmdInfo.m_iRestorePreset))==0)
 				theApp.SetRC(16);	// Command error
 		}
 		if (cmdInfo.m_iStorePreset!=-1)
