@@ -97,34 +97,38 @@ If camera 2/3 are not available the hotkeys are ignored and not defined.
 
 
 ## Command Line Options
-A few options can be set from the command line. Command-line switches override the settings in the registry.
 
-| Option | Description |
-|---|---|
-| -device:"*name of device*" | The device option can be used to specify a name component of a camera to be used for control.<br>If you enter "*" as the name, then any camera will be recognized.
-| -showdevices | Displays a message box after startup showing the name(s) of the detected cameras. |
-| -noreset | At startup, a detected camera is moved to the home position (Logitech Preset) and the zoom is reset to maximum wide angle. If the *-noreset* option  is specified, the camera position remains unchanged. |
-| -noguard | *-noguard* prevents the application from terminating itself in a controlled manner. This can be especially important in the event of a bug and for testing.|
+Several options can be specified on the command line. Command-line options override the corresponding settings stored in the registry.
 
-## Controlling the cameras with command line options
+| Option                    | Description                                                                                                                                                                                                                      |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `-device:"<device name>"` | Specifies a camera by matching part of its device name. If `"*"` is specified, any detected camera is accepted.                                                                                                                  |
+| `-showdevices`            | Displays a message box after startup showing the names of all detected cameras.                                                                                                                                                  |
+| `-noreset`                | By default, a detected camera is moved to its home position (Logitech preset) and the zoom is reset to the maximum wide-angle setting during startup. If `-noreset` is specified, the camera position and zoom remain unchanged. |
+| `-noguard`                | Prevents the application from performing a controlled self-termination. This option can be useful for debugging and testing, especially when investigating software defects.                                                     |
 
-*Bitfocus Companion* and *Elgato Streamdeck* allow starting applications. With the extended command line options it is possible to control the camera with this devices.
+## Controlling Cameras via the Command Line
 
-| Option | Description |
-|---|---|
-| -*n* | Select camera n=1,2,3 |
-| -zoom_in | Zoom camera in |
-| -zoom_out | Zoom camera out |
-| -move_up | Execute tilt movement up |
-| -move_down | Execute tilt movement up |
-| -move_left | Execute pan  movement left |
-| -move_right | Execute pan  movement right |
-| -move_home | Position camera home |
-| -store:*n* | Store current camera position under store n (*n*=1-8) |
-| -restore:*n* | Restore camera position from storage n (*n*=1-8) |
+Applications such as *Bitfocus Companion* and *Elgato Stream Deck* can launch external programs. The extended command-line options make it possible to control cameras directly from these devices.
 
-Only one camera can be controlled with one call to the command line. If you want to control multiple cameras you have to use multiple call to the command line.
-It is possible to combine different commands on the command line. The sequence as commands are executed is always the same: *Home, Restore, Zoom, Pan, Tilt, Store*.
+| Option         | Description                                                |
+| -------------- | ---------------------------------------------------------- |
+| `-<n>`         | Select camera *n* (`1`, `2`, or `3`).                      |
+| `-zoom_in`     | Zoom the camera in.                                        |
+| `-zoom_out`    | Zoom the camera out.                                       |
+| `-move_up`     | Tilt the camera upward.                                    |
+| `-move_down`   | Tilt the camera downward.                                  |
+| `-move_left`   | Pan the camera to the left.                                |
+| `-move_right`  | Pan the camera to the right.                               |
+| `-move_home`   | Move the camera to its home position.                      |
+| `-store:<n>`   | Store the current camera position in preset *n* (`1`–`8`). |
+| `-restore:<n>` | Restore the camera position from preset *n* (`1`–`8`).     |
+
+Only one camera can be controlled per command-line invocation. To control multiple cameras, invoke the application multiple times.
+
+Multiple commands can be combined in a single command line. Regardless of the order in which the options are specified, commands are always executed in the following sequence:
+
+**Home → Restore → Zoom → Pan → Tilt → Store**
 
 ### Internal handling
 
