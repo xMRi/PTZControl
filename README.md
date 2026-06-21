@@ -120,15 +120,16 @@ Applications such as *Bitfocus Companion* and *Elgato Stream Deck* can launch ex
 | `-move_down`   | Tilt the camera downward.                                  |
 | `-move_left`   | Pan the camera to the left.                                |
 | `-move_right`  | Pan the camera to the right.                               |
+| `-n:<n>`       | Execute move/zoom *n* times (`1 <= *n* <=10`).             |
 | `-move_home`   | Move the camera to its home position.                      |
 | `-store:<n>`   | Store the current camera position in preset *n* (`1`–`8`). |
 | `-restore:<n>` | Restore the camera position from preset *n* (`1`–`8`).     |
 
 Only one camera can be controlled per command-line invocation. To control multiple cameras, invoke the application multiple times.
 
-Multiple commands can be combined in a single command line. Regardless of the order in which the options are specified, commands are always executed in the following sequence:
+Only one command can be executed at one time. If multiple options are specified, the first command of the following sequence is executed:
 
-**Home → Restore → Zoom → Pan → Tilt → Store**
+**Home → Pan → Tilt → Zoom → Restore → Store**
 
 ### Internal handling
 

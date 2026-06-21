@@ -1053,9 +1053,21 @@ LRESULT CPTZControlDlg::OnAppCommand(WPARAM wParam, LPARAM lParam)
 		return 0;
 
 	// Preset must not exceed
-	UINT uiPreset = HIWORD(lParam);
-	if (uiPreset>=CWebcamController::NUM_PRESETS)
-		return 0;
+	UINT uiOption = HIWORD(lParam);
+	if (LOWORD(lParam)=='M' || LOWORD(lParam)=='S')
+	{
+		// Memory position. We have one for each preset button. Must not exceed the number of presets.
+		if (uiOption>=CWebcamController::NUM_PRESETS)
+			return 0;
+	}
+	else
+	{
+		// Other operations may use a count. We limit it to 10.
+		if (uiOption==0)
+			uiOption = 1; // Default is 1 time
+		else if (uiOption>10)
+			uiOption = 10; // Max 10 times)
+	}
 
 	// Save the current camera. We will restore it at the end of this function.
 	// And select the one we want to control.
@@ -1074,31 +1086,38 @@ LRESULT CPTZControlDlg::OnAppCommand(WPARAM wParam, LPARAM lParam)
 	switch (LOWORD(lParam))
 	{
 	case '+':
-		OnBtZoomIn();
+		while (uiOption--)
+			OnBtZoomIn();
 		break;
 	case '-':
-		OnBtZoomOut();
+		while (uiOption--)
+			OnBtZoomOut();
 		break;
 	case 'L':
-		OnBtLeft();
+		while (uiOption--)
+			OnBtLeft();
 		break;
 	case 'R':
-		OnBtRight();
+		while (uiOption--)
+			OnBtRight();
 		break;
 	case 'U':
-		OnBtUp();
+		while (uiOption--)
+			OnBtUp();
 		break;
 	case 'D':
+		while (uiOption--)
+			OnBtDown();
 		break;
 	case 'H':
 		OnBtHome();
 		break;
 	case 'M':
-		OnBtPreset(m_btPreset[uiPreset].GetDlgCtrlID());
+		OnBtPreset(m_btPreset[uiOption].GetDlgCtrlID());
 		break;
 	case 'S':
 		OnBtMemory();
-		OnBtPreset(m_btPreset[uiPreset].GetDlgCtrlID());
+		OnBtPreset(m_btPreset[uiOption].GetDlgCtrlID());
 		break;
 	default:
 		// Unknown command

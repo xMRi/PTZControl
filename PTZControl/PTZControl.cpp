@@ -67,6 +67,7 @@ public:
 	int		m_iMovePan{ 0 };		// Move pan direction: 1 (right), -1 (left)
 	int 	m_iMoveTilt{ 0 };		// Move tilt direction: -1 (down), 1 (up)	
 	int		m_iMoveHome{ 0 };		// Move Home: 1 
+	int		m_iNumSteps{ 1 };	// Number of steps to move (for move up/down/left/right)
 
 	// Currently not used (may be used if we ant yes/no/undefined)
 	enum class Mode
@@ -112,6 +113,17 @@ void CPTZControlCommandLineInfo::ParseParam(const char* pszParam,BOOL bFlag,BOOL
 			// We have a number, so we set the camera number to use
 			m_iNumCamera = atoi(pszParam)-1;
 			if (m_iNumCamera<0 || m_iNumCamera>=CPTZControlDlg::NUM_MAX_WEBCAMS)
+				theApp.SetRC(8);	// Command line error
+		}
+		else if (_strnicmp(pszParam, "n:", 2)==0)
+		{
+			if (isdigit(pszParam[2]))
+			{
+				m_iNumSteps = atoi(pszParam+2);
+				if (m_iNumSteps<0)
+					m_iNumSteps = 1;
+			}
+			else
 				theApp.SetRC(8);	// Command line error
 		}
 		else if (_strnicmp(pszParam, "restore:", 8)==0)
@@ -270,27 +282,27 @@ BOOL CPTZControlApp::InitInstance()
 			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, 'H')==0)
 				theApp.SetRC(16);	// Command error
 		}
-		if (cmdInfo.m_iRestorePreset!=-1)
+		else if (cmdInfo.m_iMovePan!=0)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM(cmdInfo.m_iMovePan<0 ? 'L' : 'R', cmdInfo.m_iNumSteps))==0)
+				theApp.SetRC(16);	// Command error
+		}
+		else if (cmdInfo.m_iMoveTilt!=0)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM(cmdInfo.m_iMoveTilt<0 ? 'D' : 'U', cmdInfo.m_iNumSteps))==0)
+				theApp.SetRC(16);	// Command error
+		}
+		else if (cmdInfo.m_iZoom!=0)
+		{
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM(cmdInfo.m_iZoom>0 ? '+' : '-', cmdInfo.m_iNumSteps))==0)
+				theApp.SetRC(16);	// Command error
+		}
+		else if (cmdInfo.m_iRestorePreset!=-1)
 		{
 			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM('M', cmdInfo.m_iRestorePreset))==0)
 				theApp.SetRC(16);	// Command error
 		}
-		if (cmdInfo.m_iZoom!=0)
-		{
-			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iZoom>0 ? '+' : '-')==0)
-				theApp.SetRC(16);	// Command error
-		}
-		if (cmdInfo.m_iMovePan!=0)
-		{
-			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iMovePan<0 ? 'L' : 'R')==0)
-				theApp.SetRC(16);	// Command error
-		}
-		if (cmdInfo.m_iMoveTilt!=0)
-		{
-			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iMoveTilt<0 ? 'D' : 'U')==0)
-				theApp.SetRC(16);	// Command error
-		}
-		if (cmdInfo.m_iStorePreset!=-1)
+		else if (cmdInfo.m_iStorePreset!=-1)
 		{
 			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM('S', cmdInfo.m_iStorePreset))==0)
 				theApp.SetRC(16);	// Command error
