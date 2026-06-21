@@ -1,3 +1,21 @@
+// PTZControl 
+// Copyright (C) 2026 Martin Richter (xMRi-Software) - webmaster@m-ri.de
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+// See the GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see
+// <https://www.gnu.org/licenses/>.
+// 
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 // PTZControl.h : main header file for the PROJECT_NAME application
 //
@@ -47,6 +65,17 @@
 #define COLOR_RED				RGB(240,0,0)
 #define COLOR_ORANGE			RGB(255,140,0)
 
+#define WM_APP_COMMAND				(WM_APP+1)	
+											// wParam : camera number, lParam: command and position
+											// Commands: LOWORD
+											//  ZoomIn= +, ZoomOut = -, 
+											//  PanLeft = L, PanRight = R, 
+											//  TiltUp = U, TiltDown = D, 
+											//  Home = H, 
+											//  Restore MemoryPos = M (HIWORD = memory position),
+											//  Store MemoryPos = S (HIWORD = memory position)
+
+
 //////////////////////////////////////////////////////////////////////////
 // CPTZControlApp:
 // See PTZControl.cpp for the implementation of this class
@@ -61,6 +90,12 @@ public:
 public:
 	virtual BOOL InitInstance();
 
+	void SetRC(int iRC)
+	{
+		if (iRC != -1)
+			m_iRC = iRC;
+	}
+
 // Implementation
 
 	DECLARE_MESSAGE_MAP()
@@ -74,7 +109,10 @@ public:
 	bool	m_bShowDevices;
 
 private:
-	CPTZControlDlg* m_pDlg;
+	CPTZControlDlg* m_pDlg{};
+	int		m_iRC{ -1 };		// Return code to return from the application. Default is 0, but can be set to other values on error.		
+								// Command line errors have retcode 8. -1 used to use the default retcod
 };
+
 
 extern CPTZControlApp theApp;

@@ -21,7 +21,7 @@ jobs:
       run: msbuild PTZControl/PTZControl.sln /p:Configuration=Release /p:Platform=x64
 
     - name: Upload PTZControl (x64) as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: PTZControl-x64
         path: ${{ github.workspace }}\PTZControl\x64\Release\PTZControl.exe
@@ -41,7 +41,7 @@ jobs:
       run: msbuild PTZControl/PTZControl.sln /p:Configuration=Release /p:Platform=x86
 
     - name: Upload PTZControl (x86) as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: PTZControl-x86
         path: ${{ github.workspace }}\PTZControl\Release\PTZControl.exe
@@ -58,7 +58,7 @@ jobs:
         run: echo "TAG_NAME=$(echo ${{ github.ref }} | sed 's/refs\/tags\///')" >> $GITHUB_ENV
   
       - name: Download x64 artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: PTZControl-x64
   
@@ -68,7 +68,7 @@ jobs:
           mv ./PTZControl.exe PTZControl-${{ env.TAG_NAME }}/x64/
   
       - name: Download x86 artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: PTZControl-x86
   
