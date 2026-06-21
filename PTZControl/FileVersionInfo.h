@@ -1,4 +1,4 @@
-// CameraRename
+// PTZControl
 // Copyright (C) 2026 Martin Richter (xMRi-Software) - webmaster@m-ri.de
 //
 // This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,6 @@
 // <https://www.gnu.org/licenses/>.
 // 
 // SPDX-License-Identifier: GPL-3.0-or-later
-
 
 #pragma once
 
