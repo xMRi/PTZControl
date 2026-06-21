@@ -21,6 +21,7 @@
 //
 
 #include "pch.h"
+#include "FileVersionInfo.h"
 #include "PTZControl.h"
 #include "SettingsDlg.h"
 #include "afxdialogex.h"
@@ -99,6 +100,16 @@ void CSettingsDlg::OnChLogitechcontrol()
 BOOL CSettingsDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
+
+	CFileVersionInfo fvi;
+	fvi.GetFileVersionInfo();
+	CString strAppVersion;
+	strAppVersion.Format(_T("%d.%d.%d"), HIWORD(fvi.dwFileVersionMS),LOWORD(fvi.dwFileVersionMS),HIWORD(fvi.dwFileVersionLS));
+
+	CString strText;
+	GetWindowText(strText);
+	strText += strAppVersion;
+	SetWindowText(strText);
 
 	OnChLogitechcontrol();
 

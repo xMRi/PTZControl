@@ -272,12 +272,12 @@ BOOL CPTZControlApp::InitInstance()
 		}
 		if (cmdInfo.m_iRestorePreset!=-1)
 		{
-			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM('R', cmdInfo.m_iRestorePreset))==0)
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, MAKELPARAM('M', cmdInfo.m_iRestorePreset))==0)
 				theApp.SetRC(16);	// Command error
 		}
 		if (cmdInfo.m_iZoom!=0)
 		{
-			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iZoom<0 ? '+' : '-')==0)
+			if (::SendMessage(hWnd, WM_APP_COMMAND, cmdInfo.m_iNumCamera, cmdInfo.m_iZoom>0 ? '+' : '-')==0)
 				theApp.SetRC(16);	// Command error
 		}
 		if (cmdInfo.m_iMovePan!=0)

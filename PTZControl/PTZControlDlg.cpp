@@ -866,7 +866,7 @@ BOOL CPTZControlDlg::OnBtPreset(UINT nId)
 	return TRUE;
 }
 
-void CPTZControlDlg::OnHotKey(UINT nId, UINT nMod, UINT nKey)
+void CPTZControlDlg::OnHotKey(UINT nId, UINT /*nMod*/, UINT /*nKey*/)
 {
 	m_iHotKeyCurrentCam = m_iCurrentWebCam;
 	m_iHotKeyNextCam = nId/10-1; // Base 10 = webcam 1
