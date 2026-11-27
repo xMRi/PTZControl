@@ -32,8 +32,11 @@
 //////////////////////////////////////////////////////////////////////////
 
 #define REG_WINDOW _T("Window")
-#define REG_WINDOW_POSX		_T("X")
-#define REG_WINDOW_POSY		_T("Y")
+#define REG_WINDOW_POSX				_T("X")
+#define REG_WINDOW_POSY				_T("Y")
+#define REG_WINDOW_CLIENT_WIDTH		_T("CX")
+#define REG_WINDOW_CLIENT_HEIGHT	_T("CY")
+
 #define REG_TOOLTIP			_T("Tooltip%d")
 
 #define REG_DEVICE						_T("Device")

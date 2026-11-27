@@ -40,6 +40,7 @@ class CPTZButton : public CMFCButton
 DECLARE_DYNAMIC(CPTZButton)
 public:
 	CPTZButton();
+	void SetScalableImage(HICON hIcon);
 	void SetCheckStyle()
 	{
 		m_bCheckButton = TRUE;
@@ -77,7 +78,10 @@ protected:
 	CString m_strTooltip;
 
 protected:
+	CSize m_sizeImageBaseClient{0, 0};
+
 	void PreSubclassWindow() override;
+	void OnDraw(CDC* pDC, const CRect& rect, UINT uiState) override;
 	void OnDrawBorder(CDC* pDC, CRect& rectClient, UINT uiState) override;
 	void OnDrawFocusRect(CDC* pDC, const CRect& rectClient) override;
 
@@ -144,6 +148,10 @@ protected:
 	int m_iHotKeyNextCam;
 	int m_iHotKeyPosition;
 
+// Initial size and layout 
+	CSize m_sizeLayoutClient{0, 0};
+	CSize m_sizeMinWindow{0, 0};
+
 // Implementation
 protected:
 	HICON m_hIcon;
@@ -151,6 +159,8 @@ protected:
 	// Generated message map functions
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 	virtual BOOL OnInitDialog();
+	void InitButtonLayout();
+	void RestoreWindowSize();
 	virtual void PostNcDestroy();
 	virtual void OnOK();
 	virtual void OnCancel();
@@ -161,7 +171,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnBtExit();
 	afx_msg void OnClose();
+	afx_msg void OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS* lpncsp);
 	afx_msg LRESULT OnNcHitTest(CPoint point);
+	afx_msg void OnSizing(UINT nSide, LPRECT lpRect);
+	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
 	afx_msg void OnBtMemory();
 	afx_msg BOOL OnBtPreset(UINT nId);
 	afx_msg void OnHotKey(UINT nId, UINT nMod, UINT nKey);

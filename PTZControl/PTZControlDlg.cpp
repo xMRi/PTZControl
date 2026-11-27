@@ -140,6 +140,67 @@ void CPTZButton::PreSubclassWindow()
 	GetToolTipCtrl().SetDelayTime(0);
 }
 
+void CPTZButton::SetScalableImage(HICON hIcon)
+{
+	// Remember the button size at which the source image is drawn at its original size.
+	CRect rectClient;
+	GetClientRect(rectClient);
+	m_sizeImageBaseClient = rectClient.Size();
+	SetImage(hIcon);
+}
+
+void CPTZButton::OnDraw(CDC* pDC, const CRect& rect, UINT uiState)
+{
+	// Keep MFC's drawing for text buttons and buttons without a scalable image.
+	if (m_sizeImageBaseClient.cx <= 0 || m_sizeImageBaseClient.cy <= 0 ||
+		m_sizeImage.cx <= 0 || m_sizeImage.cy <= 0 || GetWindowTextLength() != 0)
+	{
+		__super::OnDraw(pDC, rect, uiState);
+		return;
+	}
+
+	if (rect.IsRectEmpty())
+		return;
+
+	// Use one scale factor in both directions and fit inside the themed button border.
+	CRect rectClient;
+	GetClientRect(rectClient);
+	const double scale = (std::min)({
+		static_cast<double>(rectClient.Width()) / m_sizeImageBaseClient.cx,
+		static_cast<double>(rectClient.Height()) / m_sizeImageBaseClient.cy,
+		static_cast<double>(rect.Width()) / m_sizeImage.cx,
+		static_cast<double>(rect.Height()) / m_sizeImage.cy
+	});
+	const CSize sizeImage(
+		(std::max)(1, static_cast<int>(m_sizeImage.cx * scale + 0.5)),
+		(std::max)(1, static_cast<int>(m_sizeImage.cy * scale + 0.5)));
+	if (sizeImage == m_sizeImage)
+	{
+		__super::OnDraw(pDC, rect, uiState);
+		return;
+	}
+
+	// Keep MFC's image selection and disabled drawing for each button state.
+	const BOOL bGray = (uiState & ODS_DISABLED) && m_bGrayDisabled;
+	CMFCToolBarImages& checkedImage = bGray && m_ImageCheckedDisabled.GetCount() != 0 ? m_ImageCheckedDisabled :
+		m_bHighlighted && m_ImageCheckedHot.GetCount() != 0 ? m_ImageCheckedHot : m_ImageChecked;
+	CMFCToolBarImages& normalImage = bGray && m_ImageDisabled.GetCount() != 0 ? m_ImageDisabled :
+		m_bHighlighted && m_ImageHot.GetCount() != 0 ? m_ImageHot : m_Image;
+	const bool useCheckedImage = m_bChecked && checkedImage.GetCount() != 0;
+	CMFCToolBarImages& image = useCheckedImage ? checkedImage : normalImage;
+	const BOOL bDrawGray = bGray && (useCheckedImage ? m_ImageCheckedDisabled : m_ImageDisabled).GetCount() == 0;
+
+	// Stretch directly from MFC's original image and center it in the drawing area.
+	CAfxDrawState drawState;
+	if (image.PrepareDrawImage(drawState, sizeImage))
+	{
+		const int x = rect.left + (rect.Width() - sizeImage.cx) / 2;
+		const int y = rect.top + (rect.Height() - sizeImage.cy) / 2;
+		image.Draw(pDC, x, y, 0, FALSE, bDrawGray);
+		image.EndDrawImage(drawState);
+	}
+}
+
 void CPTZButton::OnDrawBorder(CDC* pDC, CRect& rectClient, UINT uiState)
 {
 	__super::OnDrawBorder(pDC,rectClient,uiState);
@@ -205,32 +266,15 @@ void CPTZButton::OnTimer(UINT_PTR nIDEvent)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-BOOL AdjustVisibleWindowRect(LPRECT lpRect, HWND hWndParent=NULL)
+static void AdjustVisibleWindowRect(LPRECT lpRect)
 {
-	RECT rcOrg(*lpRect);
+	MONITORINFO mi{};
+	mi.cbSize = sizeof(mi);
+	const POINT pt{lpRect->left, lpRect->top};
+	if (!::GetMonitorInfo(::MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST), &mi))
+		return;
 
-	RECT rcBase;
-	if (hWndParent)
-		// Any parent given?
-		::GetClientRect(hWndParent,&rcBase);
-	else
-	{
-		::MONITORINFO mi;
-		mi.cbSize = sizeof(mi);
-		if (!AfxGetMainWnd())
-			// If we have no main window we just try to use the main screen point 0,0
-			::GetMonitorInfo(::MonitorFromPoint(CPoint(0,0), MONITOR_DEFAULTTONEAREST), &mi);
-		else
-			// Get the main window monitor
-			::GetMonitorInfo(::MonitorFromWindow(AfxGetMainWnd()->m_hWnd, MONITOR_DEFAULTTONEAREST), &mi);
-		rcBase = mi.rcWork;
-	}
-
-	// To large?
-	if (lpRect->bottom-lpRect->top>rcBase.bottom-rcBase.top)
-		lpRect->bottom -= (lpRect->bottom-lpRect->top)-(rcBase.bottom-rcBase.top);
-	if (lpRect->right-lpRect->left>rcBase.right-rcBase.left)
-		lpRect->right -= (lpRect->right-lpRect->left)-(rcBase.right-rcBase.left);
+	const RECT& rcBase = mi.rcWork;
 
 	// Check if rect is visible
 	if (lpRect->bottom>rcBase.bottom)
@@ -242,8 +286,7 @@ BOOL AdjustVisibleWindowRect(LPRECT lpRect, HWND hWndParent=NULL)
 	if (lpRect->left<rcBase.left)
 		::OffsetRect(lpRect,rcBase.left-lpRect->left,0);
 
-	// Check if coords changes
-	return !EqualRect(lpRect,&rcOrg);
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -334,7 +377,10 @@ BEGIN_MESSAGE_MAP(CPTZControlDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_CLOSE()
+	ON_WM_NCCALCSIZE()
 	ON_WM_NCHITTEST()
+	ON_WM_SIZING()
+	ON_WM_GETMINMAXINFO()
 	ON_BN_CLICKED(IDC_BT_EXIT, &CPTZControlDlg::OnBtExit)
 	ON_WM_SETFOCUS()
 	ON_BN_CLICKED(IDC_BT_MEMORY, &CPTZControlDlg::OnBtMemory)
@@ -473,6 +519,9 @@ BOOL CPTZControlDlg::OnInitDialog()
 {
 	__super::OnInitDialog();
 
+	// Resource layout entries would otherwise react to the initial dialog resize.
+	EnableDynamicLayout(FALSE);
+
 	//---------------------------------------------------------------------
 	// INIT MFC STUFF
 
@@ -515,8 +564,11 @@ BOOL CPTZControlDlg::OnInitDialog()
 		for (auto* pBtn : apButtons)
 		{
 			HICON hIcon = images.ExtractIcon(iImage++);
-			pBtn->SetImage(hIcon);
-			// we have a graphic now, we skip the text
+			// Keep the resource text if the image could not be loaded.
+			if (hIcon == nullptr)
+				continue;
+
+			pBtn->SetScalableImage(hIcon);
 			pBtn->SetWindowText(_T(""));
 		}
 	}
@@ -622,7 +674,7 @@ BOOL CPTZControlDlg::OnInitDialog()
 	}
 
 	//-------------Register hotkeys-----------------------------------------
-
+	
 	for (int iWebCam = 0; iWebCam<(m_iNumWebCams==0 ? 1 : m_iNumWebCams); ++iWebCam)
 	{
 		for (int iPreset = 0; iPreset<CWebcamController::NUM_PRESETS; ++iPreset)
@@ -670,6 +722,12 @@ BOOL CPTZControlDlg::OnInitDialog()
 		pWnd->EnableWindow(pLayoutBtn->bShow);
 	}
 
+	// Keep the native resize frame without a caption and preserve the client size.
+	CRect rectClientBefore, rectClientAfter;
+	GetClientRect(rectClientBefore);
+	ModifyStyle(WS_CAPTION, WS_THICKFRAME, SWP_FRAMECHANGED);
+	GetClientRect(rectClientAfter);
+
 	// First Center
 	CenterWindow();
 
@@ -681,10 +739,13 @@ BOOL CPTZControlDlg::OnInitDialog()
 	pt.x = theApp.GetProfileInt(REG_WINDOW, REG_WINDOW_POSX, pt.x);
 	pt.y = theApp.GetProfileInt(REG_WINDOW, REG_WINDOW_POSY, pt.y);
 	rect.OffsetRect(pt);
+	// Apply the camera-dependent width and compensate for the frame change.
+	rect.right += layout.cxDelta * sizeRaster.cx + rectClientBefore.Width() - rectClientAfter.Width();
+	rect.bottom += rectClientBefore.Height() - rectClientAfter.Height();
 	AdjustVisibleWindowRect(rect);
 
 	// Move it
-	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, rect.Width()+layout.cxDelta*sizeRaster.cx, rect.Height(), 0);
+	SetWindowPos(&CWnd::wndTopMost, rect.left, rect.top, rect.Width(), rect.Height(), 0);
 
 	// Set the tooltips for all presets
 	for (int i = 0; i < CWebcamController::NUM_PRESETS; ++i)
@@ -725,7 +786,59 @@ BOOL CPTZControlDlg::OnInitDialog()
 		}
 	}
 
-	return FALSE;  
+	// Register the buttons at the default size before applying the saved size.
+	InitButtonLayout();
+	RestoreWindowSize();
+	return FALSE;
+}
+
+void CPTZControlDlg::InitButtonLayout()
+{
+	CRect rectClient;
+	GetClientRect(rectClient);
+	if (rectClient.IsRectEmpty())
+		return;
+
+	// Keep the default client size for scaling and the outer size for the resize limit.
+	m_sizeLayoutClient = rectClient.Size();
+	CRect rectWindow;
+	GetWindowRect(rectWindow);
+	m_sizeMinWindow = rectWindow.Size();
+
+	// Start with a fresh layout manager after the startup layout is complete.
+	EnableDynamicLayout(TRUE);
+	CMFCDynamicLayout* pLayout = GetDynamicLayout();
+	if (!pLayout->Create(this))
+		return;
+
+	// Walk the child controls and register each button for proportional movement and resizing.
+	for (HWND hChild = ::GetWindow(m_hWnd, GW_CHILD); hChild != nullptr; hChild = ::GetWindow(hChild, GW_HWNDNEXT))
+	{
+		// Keep other controls out of the button layout, and include hidden camera buttons.
+		TCHAR szClass[16];
+		if (!::GetClassName(hChild, szClass, _countof(szClass)) ||
+			_tcsicmp(szClass, _T("Button")) != 0)
+		{
+			continue;
+		}
+
+		CRect rectButton;
+		::GetWindowRect(hChild, rectButton);
+		// Use the dialog client origin for the button position.
+		ScreenToClient(rectButton);
+
+		// Derive the MFC percentages from the button bounds in the default layout.
+		const int moveX = MulDiv(rectButton.left, 100, rectClient.Width());
+		const int moveY = MulDiv(rectButton.top, 100, rectClient.Height());
+		// Round the edges so neighboring buttons scale their shared edge alike.
+		const int sizeX = MulDiv(rectButton.right, 100, rectClient.Width()) - moveX;
+		const int sizeY = MulDiv(rectButton.bottom, 100, rectClient.Height()) - moveY;
+
+		// Register the button by its window handle.
+		VERIFY(pLayout->AddItem(hChild,
+			CMFCDynamicLayout::MoveHorizontalAndVertical(moveX, moveY),
+			CMFCDynamicLayout::SizeHorizontalAndVertical(sizeX, sizeY)));
+	}
 }
 
 // If you add a minimize button to your dialog, you will need the code below
@@ -764,21 +877,151 @@ HCURSOR CPTZControlDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CPTZControlDlg::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS* lpncsp)
+{
+	// Let Windows calculate the standard resize border first.
+	// For both forms of WM_NCCALCSIZE the proposed RECT comes first.
+	RECT& rectClient = *reinterpret_cast<RECT*>(lpncsp);
+	const RECT rectWindow = rectClient;
+	__super::OnNcCalcSize(bCalcValidRects, lpncsp);
+
+	// Keep the native border and reclaim any extra strip above the client area.
+	if (GetStyle() & WS_THICKFRAME)
+	{
+		const LONG topBorder = (std::max)(1, MulDiv(1, ::GetDpiForWindow(m_hWnd), 96));
+		rectClient.top = (std::min)(rectClient.top, rectWindow.top + topBorder);
+	}
+}
+
 LRESULT CPTZControlDlg::OnNcHitTest(CPoint point)
 {
-	// Allow drag & drop
-	LRESULT lResult = __super::OnNcHitTest(point);
-	if (lResult == HTCLIENT)
-		lResult = HTCAPTION;
-	return lResult;
+	// Preserve any hit outside the client area reported by Windows.
+	const LRESULT hit = __super::OnNcHitTest(point);
+	if (hit != HTCLIENT)
+		return hit;
+
+	// The thin top border needs a wider resize grip inside the client area.
+	if (GetStyle() & WS_THICKFRAME)
+	{
+		CRect rect;
+		GetWindowRect(rect);
+		const int grip = (std::max)(1, MulDiv(4, ::GetDpiForWindow(m_hWnd), 96));
+		if (point.y < rect.top + grip)
+			return HTTOP;
+	}
+
+	// Drag the window from the background between buttons.
+	return HTCAPTION;
+}
+
+void CPTZControlDlg::RestoreWindowSize()
+{
+	// Read the last client size. Older settings may contain only the window position.
+	const int cxSaved = theApp.GetProfileInt(REG_WINDOW, REG_WINDOW_CLIENT_WIDTH, 0);
+	const int cySaved = theApp.GetProfileInt(REG_WINDOW, REG_WINDOW_CLIENT_HEIGHT, 0);
+	if (cxSaved <= 0 || cySaved <= 0 || m_sizeLayoutClient.cx <= 0 || m_sizeLayoutClient.cy <= 0)
+		return;
+
+	int cxClient = cxSaved;
+	int cyClient = cySaved;
+	// Check whether the saved size fits the current aspect ratio.
+	const int cyForSavedWidth = MulDiv(cxSaved, m_sizeLayoutClient.cy, m_sizeLayoutClient.cx);
+	if (cyForSavedWidth == -1)
+		return;
+
+	// A different camera layout can change the aspect ratio. Keep the saved height.
+	if (std::abs(cyForSavedWidth - cySaved) > 1)
+		cxClient = MulDiv(cySaved, m_sizeLayoutClient.cx, m_sizeLayoutClient.cy);
+
+	// Keep the default size if the saved size is too small for this layout.
+	if (cxClient < m_sizeLayoutClient.cx || cyClient < m_sizeLayoutClient.cy)
+		return;
+
+	CRect rect;
+	GetWindowRect(rect);
+	// Add the client size difference to the outer window rectangle.
+	rect.right += cxClient - m_sizeLayoutClient.cx;
+	rect.bottom += cyClient - m_sizeLayoutClient.cy;
+	AdjustVisibleWindowRect(rect);
+	SetWindowPos(nullptr, rect.left, rect.top, rect.Width(), rect.Height(), SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void CPTZControlDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	__super::OnGetMinMaxInfo(lpMMI);
+	// Use the larger of the Windows minimum and the default dialog size.
+	lpMMI->ptMinTrackSize.x = (std::max)(lpMMI->ptMinTrackSize.x, m_sizeMinWindow.cx);
+	lpMMI->ptMinTrackSize.y = (std::max)(lpMMI->ptMinTrackSize.y, m_sizeMinWindow.cy);
+}
+
+void CPTZControlDlg::OnSizing(UINT nSide, LPRECT lpRect)
+{
+	__super::OnSizing(nSide, lpRect);
+
+	if (m_sizeLayoutClient.cx <= 0 || m_sizeLayoutClient.cy <= 0)
+		return;
+
+	CRect rectWindow, rectClient;
+	GetWindowRect(rectWindow);
+	GetClientRect(rectClient);
+	const int cxFrame = rectWindow.Width() - rectClient.Width();
+	const int cyFrame = rectWindow.Height() - rectClient.Height();
+	// Convert the proposed outer dimensions to client dimensions before scaling.
+	const int cxProposed = lpRect->right - lpRect->left - cxFrame;
+	const int cyProposed = lpRect->bottom - lpRect->top - cyFrame;
+
+	const double cxBase = m_sizeLayoutClient.cx;
+	const double cyBase = m_sizeLayoutClient.cy;
+	// Use the dragged dimension for an edge, or both dimensions for a corner.
+	double scale;
+	if (nSide == WMSZ_LEFT || nSide == WMSZ_RIGHT)
+		scale = cxProposed / cxBase;
+	else if (nSide == WMSZ_TOP || nSide == WMSZ_BOTTOM)
+		scale = cyProposed / cyBase;
+	else
+	{
+		// Project the dragged corner onto the line of proportional sizes.
+		scale = (cxProposed * cxBase + cyProposed * cyBase) /
+			(cxBase * cxBase + cyBase * cyBase);
+	}
+
+	// Respect both the default size and the Windows tracking limits.
+	const double minScaleX = (GetSystemMetrics(SM_CXMINTRACK) - cxFrame) / cxBase;
+	const double minScaleY = (GetSystemMetrics(SM_CYMINTRACK) - cyFrame) / cyBase;
+	scale = (std::max)({scale, 1.0, minScaleX, minScaleY});
+
+	// Convert the scaled client size back to outer window dimensions.
+	const int cxWindow = static_cast<int>(cxBase * scale + 0.5) + cxFrame;
+	const int cyWindow = static_cast<int>(cyBase * scale + 0.5) + cyFrame;
+
+	// Move the dragged edges and leave the opposite corner anchored.
+	if (nSide == WMSZ_LEFT || nSide == WMSZ_TOPLEFT || nSide == WMSZ_BOTTOMLEFT)
+		lpRect->left = lpRect->right - cxWindow;
+	else
+		lpRect->right = lpRect->left + cxWindow;
+
+	if (nSide == WMSZ_TOP || nSide == WMSZ_TOPLEFT || nSide == WMSZ_TOPRIGHT)
+		lpRect->top = lpRect->bottom - cyWindow;
+	else
+		lpRect->bottom = lpRect->top + cyWindow;
 }
 
 void CPTZControlDlg::OnClose()
 {
 	CRect rect;
 	GetWindowRect(rect);
+	// Save the position and client size for the next start.
 	theApp.WriteProfileInt(REG_WINDOW,REG_WINDOW_POSX,rect.left);
 	theApp.WriteProfileInt(REG_WINDOW,REG_WINDOW_POSY,rect.top);
+
+	CRect rectClient;
+	GetClientRect(rectClient);
+	if (!rectClient.IsRectEmpty())
+	{
+		// Save client dimensions so the frame does not affect the restored size.
+		theApp.WriteProfileInt(REG_WINDOW, REG_WINDOW_CLIENT_WIDTH, rectClient.Width());
+		theApp.WriteProfileInt(REG_WINDOW, REG_WINDOW_CLIENT_HEIGHT, rectClient.Height());
+	}
 
 //-------------Register hotkeys-----------------------------------------
 

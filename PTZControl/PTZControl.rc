@@ -247,8 +247,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,1,46
- PRODUCTVERSION 3,0,1,46
+ FILEVERSION 4,0,0,47
+ PRODUCTVERSION 4,0,0,47
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -265,12 +265,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "MRi - Software Development"
             VALUE "FileDescription", "PTZControl - Controler for a Logitech PTZ Pro, PTZ Pro 2, Rally Plus, Logi Group cameras and others"
-            VALUE "FileVersion", "3.0.1.46"
+            VALUE "FileVersion", "4.0.0.47"
             VALUE "InternalName", "PTZControl.exe"
             VALUE "LegalCopyright", "(c) Martin Richter - Gelnhausen - Germany"
             VALUE "OriginalFilename", "PTZControl.exe"
             VALUE "ProductName", "PTZ-Control for Logitech PTZ cameras"
-            VALUE "ProductVersion", "3.0.1.46"
+            VALUE "ProductVersion", "4.0.0.47"
         END
     END
     BLOCK "VarFileInfo"
